@@ -1,0 +1,49 @@
+<div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all mx-auto">
+  
+  <!-- Header -->
+  <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+    <h3 class="text-lg font-semibold text-gray-800">Exportar Design Tokens</h3>
+    <button (click)="close()" class="text-gray-400 hover:text-gray-600 transition-colors">
+      <span class="material-icons">close</span>
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="px-6 pt-6 flex gap-2">
+    <button (click)="activeTab = 'css'" 
+            class="px-4 py-2 rounded-lg text-sm font-medium transition-colors border"
+            [ngClass]="activeTab === 'css' ? 'bg-white border-gray-300 text-gray-900 shadow-sm' : 'bg-gray-50 border-transparent text-gray-500 hover:bg-gray-100'">
+      CSS
+    </button>
+    <button (click)="activeTab = 'json'" 
+            class="px-4 py-2 rounded-lg text-sm font-medium transition-colors border"
+            [ngClass]="activeTab === 'json' ? 'bg-white border-gray-300 text-gray-900 shadow-sm' : 'bg-gray-50 border-transparent text-gray-500 hover:bg-gray-100'">
+      JSON
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="p-6">
+    <div class="relative bg-[#1e293b] rounded-xl p-6 group shadow-inner">
+      <button (click)="copyTokens()" 
+              class="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg text-xs font-medium transition-colors border border-gray-600 shadow-sm">
+        <span class="material-icons text-[16px]">content_copy</span>
+        Copiar
+      </button>
+      
+      <pre class="font-mono text-sm text-gray-100 overflow-x-auto leading-relaxed"><code>{{ activeTab === 'css' ? cssTokens : jsonTokens }}</code></pre>
+    </div>
+    
+    <!-- Preview Palette Strip -->
+    <div class="mt-6">
+      <p class="text-xs font-medium text-gray-500 mb-3">Paleta {{ data.harmony }}</p>
+      <div class="flex gap-2">
+        <div *ngFor="let color of data.palette" class="flex flex-col gap-1">
+          <div class="w-20 h-16 rounded-lg shadow-sm border border-gray-200" [style.backgroundColor]="color.hex"></div>
+          <span class="text-[10px] font-mono text-gray-500 text-center">{{ color.hex }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
