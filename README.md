@@ -48,6 +48,10 @@ The frontend is developed using Angular, a platform for building mobile and desk
      ```
      pip install -r requirements.txt
      ```
+   - Copy `.env.example` to `.env` and configure:
+     ```
+     cp .env.example .env
+     ```
 
 3. Set up the frontend:
    - Navigate to the `frontend` directory.
@@ -71,6 +75,16 @@ The frontend is developed using Angular, a platform for building mobile and desk
    ```
 
 Visit `http://localhost:4200` to access the frontend application and `http://localhost:8000` for the backend API.
+
+### Environment Variables
+
+**Backend** (`.env`):
+- `DEBUG`: Enable debug mode (default: False)
+- `CORS_ORIGINS`: Comma-separated list of allowed origins (supports GitHub Pages with `*.github.io`)
+
+**Frontend**:
+- `environment.ts`: Production API URL
+- `environment.development.ts`: Development API URL (default: `http://localhost:8000/api/v1`)
 
 ## Contributing
 

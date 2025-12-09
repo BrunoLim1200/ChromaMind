@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface BackendColorSwatch {
   hex: string;
@@ -22,7 +23,7 @@ export interface PaletteResponse {
 @Injectable({ providedIn: 'root' })
 export class ColorService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8000/api/v1';
+  private apiUrl = environment.apiUrl;
 
   generatePalette(baseColor: string): Observable<PaletteResponse> {
     return this.http.post<PaletteResponse>(

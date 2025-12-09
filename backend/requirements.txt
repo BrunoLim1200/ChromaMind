@@ -1,7 +1,8 @@
-FastAPI
+fastapi
 uvicorn
 sqlalchemy
 pydantic
+pydantic-settings
 alembic
 python-dotenv
 httpx

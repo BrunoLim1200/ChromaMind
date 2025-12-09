@@ -165,7 +165,7 @@ export class PaletteDisplayComponent implements OnInit {
         this.fullPaletteData = response.harmonies;
         this.updateDisplayedPalette();
       },
-      error: (err) => console.error('Error generating palette:', err)
+      error: () => {}
     });
   }
 
@@ -207,9 +207,7 @@ export class PaletteDisplayComponent implements OnInit {
   }
 
   copyToClipboard(color: string) {
-    navigator.clipboard.writeText(color).then(() => {
-      console.log('Copied: ' + color);
-    });
+    navigator.clipboard.writeText(color);
   }
 
   exportTokens() {
