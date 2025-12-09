@@ -1,6 +1,6 @@
 # ChromaMind
 
-ChromaMind is a web application built with FastAPI for the backend and Angular with Tailwind CSS for the frontend. This project aims to provide a seamless experience for users by leveraging modern web technologies.
+<img width="1888" height="923" alt="image" src="https://github.com/user-attachments/assets/cfaa96f0-967f-499b-8870-e76ac1af4679" />
 
 ## Project Structure
 
