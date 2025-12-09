@@ -1,8 +1,9 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, Optional
+from typing import List, Dict
+
 
 class ColorSwatch(BaseModel):
-    hex: str = Field(..., pattern=r"^#[0-9a-fA-F]{6}$")
+    hex: str
     rgb: List[int]
     hsl: List[float]
     contrast_white: float
@@ -12,11 +13,10 @@ class ColorSwatch(BaseModel):
     wcag_aa_black: bool
     wcag_aaa_black: bool
 
-class HarmonyPalette(BaseModel):
-    colors: List[ColorSwatch]
 
 class PaletteRequest(BaseModel):
-    base_color: str = Field(..., pattern=r"^#[0-9a-fA-F]{6}$", description="Hex color code (e.g. #FF5733)")
+    base_color: str = Field(..., pattern=r"^#[0-9a-fA-F]{6}$")
+
 
 class PaletteResponse(BaseModel):
     base_color: str

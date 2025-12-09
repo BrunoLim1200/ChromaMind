@@ -16,21 +16,18 @@ export interface BackendColorSwatch {
 
 export interface PaletteResponse {
   base_color: string;
-  harmonies: {
-    [key: string]: BackendColorSwatch[];
-  };
+  harmonies: Record<string, BackendColorSwatch[]>;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ColorService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:8000/api/v1';
 
   generatePalette(baseColor: string): Observable<PaletteResponse> {
-    return this.http.post<PaletteResponse>(`${this.apiUrl}/palette/generate-palette`, {
-      base_color: baseColor
-    });
+    return this.http.post<PaletteResponse>(
+      `${this.apiUrl}/palette/generate-palette`,
+      { base_color: baseColor }
+    );
   }
 }

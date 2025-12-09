@@ -22,15 +22,10 @@ export class ExportTokenDialogComponent {
   get cssTokens(): string {
     if (!this.data.palette.length) return '';
     
-    const lines = [
-      ':root {',
-      `  /* ${this.data.harmony} Color Palette */`
-    ];
-
+    const lines = [':root {', `  /* ${this.data.harmony} Color Palette */`];
     this.data.palette.forEach((color, index) => {
       lines.push(`  --color-primary-${(index + 1) * 100}: ${color.hex};`);
     });
-
     lines.push('}');
     return lines.join('\n');
   }
@@ -38,25 +33,21 @@ export class ExportTokenDialogComponent {
   get jsonTokens(): string {
     if (!this.data.palette.length) return '{}';
     
-    const tokens: any = {
+    const tokens = {
       palette: {
         name: this.data.harmony,
-        colors: {}
+        colors: Object.fromEntries(
+          this.data.palette.map((color, index) => [`${(index + 1) * 100}`, color.hex])
+        )
       }
     };
-
-    this.data.palette.forEach((color, index) => {
-      tokens.palette.colors[`${(index + 1) * 100}`] = color.hex;
-    });
 
     return JSON.stringify(tokens, null, 2);
   }
 
   copyTokens() {
     const content = this.activeTab === 'css' ? this.cssTokens : this.jsonTokens;
-    navigator.clipboard.writeText(content).then(() => {
-      console.log('Tokens copied to clipboard');
-    });
+    navigator.clipboard.writeText(content);
   }
 
   close() {
