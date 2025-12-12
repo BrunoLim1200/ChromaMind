@@ -8,7 +8,7 @@ service = ColorTheoryService()
 @router.post("/generate-palette", response_model=PaletteResponse)
 async def generate_palette(request: PaletteRequest):
     try:
-        harmonies = service.generate_full_palette(request.base_color)
+        harmonies = service.generate_full_palette(request.base_color, request.count)
         return PaletteResponse(
             base_color=request.base_color,
             harmonies=harmonies

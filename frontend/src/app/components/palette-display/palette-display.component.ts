@@ -1,9 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Dialog, DialogModule } from '@angular/cdk/dialog';
 import { ColorService, BackendColorSwatch, PaletteResponse } from '../../services/color.service';
 import { ExportTokenDialogComponent } from '../export-token-dialog/export-token-dialog.component';
+import { Subject, Subscription, asyncScheduler } from 'rxjs';
+import { debounceTime, switchMap, distinctUntilChanged, throttleTime } from 'rxjs/operators';
 
 interface ColorSwatch {
   hex: string;
@@ -18,12 +20,16 @@ interface ColorSwatch {
   templateUrl: './palette-display.component.html',
   styleUrls: ['./palette-display.component.scss']
 })
-export class PaletteDisplayComponent implements OnInit {
+export class PaletteDisplayComponent implements OnInit, OnDestroy {
   private colorService = inject(ColorService);
   private dialog = inject(Dialog);
+  
+  private colorUpdateSubject = new Subject<string>();
+  private subscription: Subscription = new Subscription();
 
   baseColor = '#d1e6ad';
   selectedHarmony = 'Monocromático';
+  colorCount = 5;
   
   harmonies = [
     'Monocromático', 
@@ -52,40 +58,94 @@ export class PaletteDisplayComponent implements OnInit {
   ];
 
   markerPosition = { x: 0, y: 0 };
+  markers: Array<{ x: number, y: number, color: string, offset: number }> = [];
+  draggedMarkerIndex = 0;
   isDragging = false;
   private wheelRect: DOMRect | null = null;
+
+  private harmonyOffsets: Record<string, number[]> = {
+    'Monocromático': [0],
+    'Análogo': [0, -30, 30],
+    'Complementar': [0, 180],
+    'Triádico': [0, 120, 240],
+    'Split-Complementary': [0, 150, 210]
+  };
 
   ngOnInit() {
     this.updateMarkerFromHex(this.baseColor);
     this.generatePalette();
+
+    // Setup live preview with throttle
+    this.subscription.add(
+      this.colorUpdateSubject.pipe(
+        throttleTime(100, asyncScheduler, { leading: true, trailing: true }),
+        distinctUntilChanged(),
+        switchMap(hex => this.colorService.generatePalette(hex, this.colorCount))
+      ).subscribe({
+        next: (response) => {
+          this.fullPaletteData = response.harmonies;
+          this.updateDisplayedPalette();
+        },
+        error: (err) => console.error('Error generating palette:', err)
+      })
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 
   onHexChange(newHex: string) {
     this.baseColor = newHex;
     this.updateMarkerFromHex(newHex);
+    this.colorUpdateSubject.next(newHex);
   }
 
   updateMarkerFromHex(hex: string) {
     if (!/^#[0-9A-F]{6}$/i.test(hex)) return;
 
     const { h, s } = this.hexToHsl(hex);
-    const angleRad = h * (Math.PI / 180);
     const radius = (s / 100) * 96;
 
-    this.markerPosition = {
-      x: radius * Math.cos(angleRad),
-      y: radius * Math.sin(angleRad)
-    };
+    const offsets = this.harmonyOffsets[this.selectedHarmony] || [0];
+    
+    this.markers = offsets.map(offset => {
+      const adjustedHue = (h + offset + 360) % 360;
+      const angleRad = adjustedHue * (Math.PI / 180);
+      return {
+        x: radius * Math.cos(angleRad),
+        y: radius * Math.sin(angleRad),
+        color: this.hslToHex(adjustedHue, s, 50),
+        offset: offset
+      };
+    });
+
+    if (this.markers.length > 0) {
+      this.markerPosition = { x: this.markers[0].x, y: this.markers[0].y };
+    }
   }
 
-  startDrag(event: MouseEvent) {
+  startDrag(event: MouseEvent, index: number = -1) {
     this.isDragging = true;
-    const wheel = (event.target as HTMLElement).closest('.relative') as HTMLElement;
-    this.wheelRect = wheel.getBoundingClientRect();
-    this.handleDrag(event);
+    this.draggedMarkerIndex = index === -1 ? 0 : index;
     
-    window.addEventListener('mousemove', this.onMouseMove);
-    window.addEventListener('mouseup', this.onMouseUp);
+    // Find the wheel element (parent of markers or the element itself)
+    const target = event.target as HTMLElement;
+    const wheel = target.classList.contains('relative') && target.classList.contains('rounded-full') 
+      ? target 
+      : target.closest('.relative.rounded-full') as HTMLElement;
+
+    if (wheel) {
+      this.wheelRect = wheel.getBoundingClientRect();
+      
+      // If clicked on background, update immediately
+      if (index === -1) {
+        this.handleDrag(event);
+      }
+      
+      window.addEventListener('mousemove', this.onMouseMove);
+      window.addEventListener('mouseup', this.onMouseUp);
+    }
   }
 
   private onMouseMove = (event: MouseEvent) => {
@@ -96,7 +156,7 @@ export class PaletteDisplayComponent implements OnInit {
     this.isDragging = false;
     window.removeEventListener('mousemove', this.onMouseMove);
     window.removeEventListener('mouseup', this.onMouseUp);
-    this.generatePalette();
+    // No need to call generatePalette() here as the subject handles it
   };
 
   handleDrag(event: MouseEvent) {
@@ -112,18 +172,21 @@ export class PaletteDisplayComponent implements OnInit {
     let angle = Math.atan2(y, x);
     const maxRadius = this.wheelRect.width / 2;
 
-    if (radius > maxRadius) {
-      x = Math.cos(angle) * maxRadius;
-      y = Math.sin(angle) * maxRadius;
-    }
-
-    this.markerPosition = { x, y };
+    // Calculate saturation based on distance from center
+    const saturation = Math.min(radius / maxRadius, 1) * 100;
 
     if (angle < 0) angle += 2 * Math.PI;
     const hue = angle * (180 / Math.PI);
-    const saturation = Math.min(radius / maxRadius, 1) * 100;
     
-    this.baseColor = this.hslToHex(hue, saturation, 50);
+    // Calculate Base Hue based on the dragged marker's offset
+    const offset = this.markers[this.draggedMarkerIndex]?.offset || 0;
+    const baseHue = (hue - offset + 360) % 360;
+    
+    this.baseColor = this.hslToHex(baseHue, saturation, 50);
+    this.updateMarkerFromHex(this.baseColor);
+    
+    // Trigger live update
+    this.colorUpdateSubject.next(this.baseColor);
   }
 
   private hexToHsl(hex: string): { h: number, s: number, l: number } {
@@ -160,13 +223,18 @@ export class PaletteDisplayComponent implements OnInit {
   }
 
   generatePalette() {
-    this.colorService.generatePalette(this.baseColor).subscribe({
+    this.colorService.generatePalette(this.baseColor, this.colorCount).subscribe({
       next: (response) => {
         this.fullPaletteData = response.harmonies;
         this.updateDisplayedPalette();
       },
       error: () => {}
     });
+  }
+
+  onCountChange(count: number) {
+    this.colorCount = count;
+    this.generatePalette();
   }
 
   updateDisplayedPalette() {
@@ -189,6 +257,7 @@ export class PaletteDisplayComponent implements OnInit {
 
   onHarmonyChange(harmony: string) {
     this.selectedHarmony = harmony;
+    this.updateMarkerFromHex(this.baseColor);
     this.updateDisplayedPalette();
   }
 

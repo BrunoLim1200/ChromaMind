@@ -25,10 +25,10 @@ export class ColorService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
-  generatePalette(baseColor: string): Observable<PaletteResponse> {
+  generatePalette(baseColor: string, count: number = 5): Observable<PaletteResponse> {
     return this.http.post<PaletteResponse>(
       `${this.apiUrl}/palette/generate-palette`,
-      { base_color: baseColor }
+      { base_color: baseColor, count }
     );
   }
 }

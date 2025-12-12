@@ -15,12 +15,10 @@
       
       <!-- Left Column: Generator -->
       <div class="lg:col-span-8 space-y-12">
-        
-        <!-- Color Input Section -->
         <div class="flex flex-col items-center space-y-8">
           <!-- Visual Color Wheel (CSS Gradient) -->
           <div #colorWheel
-               (mousedown)="startDrag($event)"
+               (mousedown)="startDrag($event, -1)"
                class="relative w-48 h-48 rounded-full shadow-xl ring-4 ring-white cursor-crosshair active:scale-95 transition-transform select-none">
             <!-- Standard HSL Conic Gradient -->
             <div class="absolute inset-0 rounded-full pointer-events-none" 
@@ -29,11 +27,13 @@
             <!-- Saturation/Lightness Overlay -->
             <div class="absolute inset-0 rounded-full bg-[radial-gradient(circle,white,transparent_70%)] opacity-50 pointer-events-none"></div>
             
-            <!-- Draggable Marker -->
-            <div class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md bg-transparent pointer-events-none transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-75"
-                 [style.left.px]="96 + markerPosition.x"
-                 [style.top.px]="96 + markerPosition.y"
-                 [style.backgroundColor]="baseColor">
+            <!-- Draggable Markers -->
+            <div *ngFor="let marker of markers; let i = index"
+                 class="absolute w-6 h-6 rounded-full border-2 border-white shadow-md transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-75 cursor-move hover:scale-110"
+                 [style.left.px]="96 + marker.x"
+                 [style.top.px]="96 + marker.y"
+                 [style.backgroundColor]="marker.color"
+                 (mousedown)="startDrag($event, i); $event.stopPropagation()">
             </div>
           </div>
 
@@ -49,7 +49,19 @@
               </button>
             </div>
           </div>
+
+          <!-- Count Slider -->
+          <div class="flex items-center gap-3">
+            <div class="relative flex items-center">
+              <span class="text-xs text-gray-400 absolute -bottom-6 left-0">5</span>
+              <input type="range" min="5" max="15" step="1" 
+                     [ngModel]="colorCount" (ngModelChange)="onCountChange($event)"
+                     class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500">
+              <span class="text-xs text-gray-400 absolute -bottom-6 right-0">15</span>
+            </div>
+          </div>
         </div>
+
 
         <!-- Harmony Selector -->
         <div class="flex justify-center border-b border-gray-200">
@@ -66,10 +78,10 @@
         </div>
 
         <!-- Palette Grid -->
-        <div class="grid grid-cols-5 gap-4 h-96">
+        <div class="grid grid-cols-5 gap-4 min-h-[24rem]">
           <div *ngFor="let color of currentPalette" class="group relative flex flex-col h-full">
             <!-- Color Card -->
-            <div class="flex-grow rounded-2xl shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer"
+            <div class="flex-grow rounded-2xl shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer min-h-[10rem]"
                  [style.backgroundColor]="color.hex">
             </div>
             
@@ -93,6 +105,13 @@
               </div>
             </div>
           </div>
+
+          <ng-container *ngIf="currentPalette.length < 15">
+             <div *ngFor="let i of [].constructor(15 - currentPalette.length)" 
+                  class="group relative flex flex-col h-full opacity-50 border-2 border-dashed border-gray-200 rounded-2xl p-4 items-center justify-center min-h-[14rem]">
+                <span class="material-icons text-gray-300 text-3xl">add</span>
+             </div>
+          </ng-container>
         </div>
       </div>
 
