@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Dialog, DialogModule } from '@angular/cdk/dialog';
@@ -18,11 +18,13 @@ interface ColorSwatch {
   standalone: true,
   imports: [CommonModule, FormsModule, DialogModule],
   templateUrl: './palette-display.component.html',
-  styleUrls: ['./palette-display.component.scss']
+  styleUrls: ['./palette-display.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PaletteDisplayComponent implements OnInit, OnDestroy {
   private colorService = inject(ColorService);
   private dialog = inject(Dialog);
+  private cdr = inject(ChangeDetectorRef);
   
   private colorUpdateSubject = new Subject<string>();
   private subscription: Subscription = new Subscription();
@@ -30,6 +32,9 @@ export class PaletteDisplayComponent implements OnInit, OnDestroy {
   baseColor = '#d1e6ad';
   selectedHarmony = 'Monocromático';
   colorCount = 5;
+  
+  // Cache for palette responses: key = hex + harmony_type
+  private paletteCache = new Map<string, Record<string, BackendColorSwatch[]>>();
   
   harmonies = [
     'Monocromático', 
@@ -80,11 +85,13 @@ export class PaletteDisplayComponent implements OnInit, OnDestroy {
       this.colorUpdateSubject.pipe(
         throttleTime(100, asyncScheduler, { leading: true, trailing: true }),
         distinctUntilChanged(),
-        switchMap(hex => this.colorService.generatePalette(hex, this.colorCount))
+        switchMap(hex => this.colorService.generatePalette(hex, this.harmonyMap[this.selectedHarmony], this.colorCount))
       ).subscribe({
         next: (response) => {
           this.fullPaletteData = response.harmonies;
+          this.cachePalette(this.baseColor, this.harmonyMap[this.selectedHarmony], response.harmonies);
           this.updateDisplayedPalette();
+          this.cdr.markForCheck();
         },
         error: (err) => console.error('Error generating palette:', err)
       })
@@ -93,6 +100,18 @@ export class PaletteDisplayComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+    window.removeEventListener('mousemove', this.onMouseMove);
+    window.removeEventListener('mouseup', this.onMouseUp);
+  }
+
+  private cachePalette(hex: string, harmonyType: string, data: Record<string, BackendColorSwatch[]>) {
+    const key = `${hex}-${harmonyType}-${this.colorCount}`;
+    this.paletteCache.set(key, data);
+  }
+
+  private getCachedPalette(hex: string, harmonyType: string): Record<string, BackendColorSwatch[]> | undefined {
+    const key = `${hex}-${harmonyType}-${this.colorCount}`;
+    return this.paletteCache.get(key);
   }
 
   onHexChange(newHex: string) {
@@ -223,14 +242,25 @@ export class PaletteDisplayComponent implements OnInit, OnDestroy {
   }
 
   generatePalette() {
-    this.colorService.generatePalette(this.baseColor, this.colorCount).subscribe({
+    const harmonyType = this.harmonyMap[this.selectedHarmony];
+    const cached = this.getCachedPalette(this.baseColor, harmonyType);
+
+    if (cached) {
+      this.fullPaletteData = cached;
+      this.updateDisplayedPalette();
+      return;
+    }
+
+    this.colorService.generatePalette(this.baseColor, harmonyType, this.colorCount).subscribe({
       next: (response) => {
         this.fullPaletteData = response.harmonies;
+        this.cachePalette(this.baseColor, harmonyType, response.harmonies);
         this.updateDisplayedPalette();
+        this.cdr.markForCheck();
       },
       error: () => {}
     });
-  }
+  };
 
   onCountChange(count: number) {
     this.colorCount = count;
@@ -258,7 +288,7 @@ export class PaletteDisplayComponent implements OnInit, OnDestroy {
   onHarmonyChange(harmony: string) {
     this.selectedHarmony = harmony;
     this.updateMarkerFromHex(this.baseColor);
-    this.updateDisplayedPalette();
+    this.generatePalette();
   }
 
   private mapToFrontendSwatch(backendSwatch: BackendColorSwatch): ColorSwatch {
