@@ -45,54 +45,59 @@ class ColorTheoryService:
     def _adjust_hue(self, h: float, degree: float) -> float:
         return (h + degree / 360.0) % 1.0
 
-    def generate_full_palette(self, base_color_hex: str, count: int = 5) -> Dict[str, List[Dict[str, Any]]]:
+    def generate_harmony(self, base_color_hex: str, harmony_type: str, count: int = 5) -> Dict[str, List[Dict[str, Any]]]:
         r, g, b = self._hex_to_rgb(base_color_hex)
         h, l, s = colorsys.rgb_to_hls(r/255.0, g/255.0, b/255.0)
         
         result = {}
 
-        # Monochromatic: Variations in lightness
-        result["monochromatic"] = [
-            self._create_swatch(
-                self._rgb_to_hex(tuple(int(c * 255) for c in colorsys.hls_to_rgb(h, 0.1 + (i * (0.8 / (count - 1))), s)))
-            ) for i in range(count)
-        ]
+        if harmony_type == "monochromatic":
+            # Monochromatic: Variations in lightness
+            result["monochromatic"] = [
+                self._create_swatch(
+                    self._rgb_to_hex(tuple(int(c * 255) for c in colorsys.hls_to_rgb(h, 0.1 + (i * (0.8 / (count - 1))), s)))
+                ) for i in range(count)
+            ]
 
-        # Analogous: Spread across 60 degrees
-        step = 60 / (count - 1) if count > 1 else 0
-        start_angle = -30
-        result["analogous"] = [
-            self._create_swatch(
-                self._rgb_to_hex(tuple(int(c * 255) for c in colorsys.hls_to_rgb(self._adjust_hue(h, start_angle + (i * step)), l, s)))
-            ) for i in range(count)
-        ]
+        elif harmony_type == "analogous":
+            # Analogous: Spread across 60 degrees
+            step = 60 / (count - 1) if count > 1 else 0
+            start_angle = -30
+            result["analogous"] = [
+                self._create_swatch(
+                    self._rgb_to_hex(tuple(int(c * 255) for c in colorsys.hls_to_rgb(self._adjust_hue(h, start_angle + (i * step)), l, s)))
+                ) for i in range(count)
+            ]
 
-        # Complementary: Base + Complement + Tints/Shades
-        # Strategy: Half base variations, Half complement variations
-        comp_h = self._adjust_hue(h, 180)
-        base_count = (count + 1) // 2
-        comp_count = count - base_count
-        
-        base_vars = [
-            self._create_swatch(
-                self._rgb_to_hex(tuple(int(c * 255) for c in colorsys.hls_to_rgb(h, 0.2 + (i * (0.6 / max(1, base_count - 1))), s)))
-            ) for i in range(base_count)
-        ]
-        comp_vars = [
-            self._create_swatch(
-                self._rgb_to_hex(tuple(int(c * 255) for c in colorsys.hls_to_rgb(comp_h, 0.2 + (i * (0.6 / max(1, comp_count - 1))), s)))
-            ) for i in range(comp_count)
-        ]
-        result["complementary"] = base_vars + comp_vars
+        elif harmony_type == "complementary":
+            # Complementary: Base + Complement + Tints/Shades
+            # Strategy: Half base variations, Half complement variations
+            comp_h = self._adjust_hue(h, 180)
+            base_count = (count + 1) // 2
+            comp_count = count - base_count
+            
+            base_vars = [
+                self._create_swatch(
+                    self._rgb_to_hex(tuple(int(c * 255) for c in colorsys.hls_to_rgb(h, 0.2 + (i * (0.6 / max(1, base_count - 1))), s)))
+                ) for i in range(base_count)
+            ]
+            comp_vars = [
+                self._create_swatch(
+                    self._rgb_to_hex(tuple(int(c * 255) for c in colorsys.hls_to_rgb(comp_h, 0.2 + (i * (0.6 / max(1, comp_count - 1))), s)))
+                ) for i in range(comp_count)
+            ]
+            result["complementary"] = base_vars + comp_vars
 
-        # Triadic: 3 hues distributed
-        # Strategy: Distribute count among 3 hues (0, 120, 240)
-        triad_hues = [0, 120, 240]
-        result["triadic"] = self._distribute_hues(h, l, s, triad_hues, count)
+        elif harmony_type == "triadic":
+            # Triadic: 3 hues distributed
+            # Strategy: Distribute count among 3 hues (0, 120, 240)
+            triad_hues = [0, 120, 240]
+            result["triadic"] = self._distribute_hues(h, l, s, triad_hues, count)
 
-        # Split-Complementary: 3 hues (0, 150, 210)
-        split_hues = [0, 150, 210]
-        result["split_complementary"] = self._distribute_hues(h, l, s, split_hues, count)
+        elif harmony_type == "split_complementary":
+            # Split-Complementary: 3 hues (0, 150, 210)
+            split_hues = [0, 150, 210]
+            result["split_complementary"] = self._distribute_hues(h, l, s, split_hues, count)
 
         return result
 

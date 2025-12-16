@@ -17,6 +17,7 @@ class ColorSwatch(BaseModel):
 class PaletteRequest(BaseModel):
     base_color: str = Field(..., pattern=r"^#[0-9a-fA-F]{6}$")
     count: int = Field(5, ge=5, le=15, description="Number of colors to generate (5-15)")
+    harmony_type: str = Field("monochromatic", description="Type of harmony to generate (monochromatic, analogous, complementary, triadic, split_complementary)")
 
 
 class PaletteResponse(BaseModel):

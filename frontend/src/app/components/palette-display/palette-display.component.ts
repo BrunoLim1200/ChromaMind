@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Dialog, DialogModule } from '@angular/cdk/dialog';
@@ -18,7 +18,8 @@ interface ColorSwatch {
   standalone: true,
   imports: [CommonModule, FormsModule, DialogModule],
   templateUrl: './palette-display.component.html',
-  styleUrls: ['./palette-display.component.scss']
+  styleUrls: ['./palette-display.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PaletteDisplayComponent implements OnInit, OnDestroy {
   private colorService = inject(ColorService);
@@ -80,7 +81,7 @@ export class PaletteDisplayComponent implements OnInit, OnDestroy {
       this.colorUpdateSubject.pipe(
         throttleTime(100, asyncScheduler, { leading: true, trailing: true }),
         distinctUntilChanged(),
-        switchMap(hex => this.colorService.generatePalette(hex, this.colorCount))
+        switchMap(hex => this.colorService.generatePalette(hex, this.harmonyMap[this.selectedHarmony], this.colorCount))
       ).subscribe({
         next: (response) => {
           this.fullPaletteData = response.harmonies;
@@ -93,6 +94,8 @@ export class PaletteDisplayComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+    window.removeEventListener('mousemove', this.onMouseMove);
+    window.removeEventListener('mouseup', this.onMouseUp);
   }
 
   onHexChange(newHex: string) {
@@ -223,7 +226,7 @@ export class PaletteDisplayComponent implements OnInit, OnDestroy {
   }
 
   generatePalette() {
-    this.colorService.generatePalette(this.baseColor, this.colorCount).subscribe({
+    this.colorService.generatePalette(this.baseColor, this.harmonyMap[this.selectedHarmony], this.colorCount).subscribe({
       next: (response) => {
         this.fullPaletteData = response.harmonies;
         this.updateDisplayedPalette();
@@ -258,7 +261,7 @@ export class PaletteDisplayComponent implements OnInit, OnDestroy {
   onHarmonyChange(harmony: string) {
     this.selectedHarmony = harmony;
     this.updateMarkerFromHex(this.baseColor);
-    this.updateDisplayedPalette();
+    this.generatePalette();
   }
 
   private mapToFrontendSwatch(backendSwatch: BackendColorSwatch): ColorSwatch {
