@@ -6,6 +6,8 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:gh": "ng build --base-href /ChromaMind/",
+    "deploy": "npm run build:gh && cp dist/ChromaMind/index.html dist/ChromaMind/404.html && echo > dist/ChromaMind/.nojekyll && gh-pages -d dist/ChromaMind -t",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -29,6 +31,7 @@
     "@angular/compiler-cli": "~17.3.0",
     "@types/jasmine": "^5.1.13",
     "@types/node": "^18.0.0",
+    "gh-pages": "^6.3.0",
     "jasmine-core": "^5.13.0",
     "karma": "^6.4.4",
     "karma-chrome-launcher": "^3.2.0",
