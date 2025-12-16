@@ -175,7 +175,7 @@ export class PaletteDisplayComponent implements OnInit, OnDestroy {
     this.isDragging = false;
     window.removeEventListener('mousemove', this.onMouseMove);
     window.removeEventListener('mouseup', this.onMouseUp);
-    // No need to call generatePalette() here as the subject handles it
+    this.generatePalette();
   };
 
   handleDrag(event: MouseEvent) {
@@ -203,9 +203,7 @@ export class PaletteDisplayComponent implements OnInit, OnDestroy {
     
     this.baseColor = this.hslToHex(baseHue, saturation, 50);
     this.updateMarkerFromHex(this.baseColor);
-    
-    // Trigger live update
-    this.colorUpdateSubject.next(this.baseColor);
+    this.cdr.markForCheck();
   }
 
   private hexToHsl(hex: string): { h: number, s: number, l: number } {
