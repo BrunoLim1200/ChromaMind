@@ -22,21 +22,18 @@ describe('ColorService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should generate palette with all harmonies', () => {
+  it('should generate palette with requested harmony', () => {
     const mockResponse: PaletteResponse = {
       base_color: '#FF0000',
       harmonies: {
         complementary: [
           { hex: '#ff0000', rgb: [255, 0, 0], hsl: [0, 100, 50], contrast_white: 4.0, contrast_black: 5.25, wcag_aa_white: false, wcag_aaa_white: false, wcag_aa_black: true, wcag_aaa_black: false },
           { hex: '#00ffff', rgb: [0, 255, 255], hsl: [180, 100, 50], contrast_white: 1.25, contrast_black: 16.75, wcag_aa_white: false, wcag_aaa_white: false, wcag_aa_black: true, wcag_aaa_black: true }
-        ],
-        analogous: [],
-        triadic: [],
-        monochromatic: []
+        ]
       }
     };
 
-    service.generatePalette('#FF0000').subscribe(response => {
+    service.generatePalette('#FF0000', 'complementary').subscribe(response => {
       expect(response.base_color).toBe('#FF0000');
       expect(response.harmonies).toBeTruthy();
       expect(response.harmonies.complementary).toBeTruthy();
@@ -44,12 +41,12 @@ describe('ColorService', () => {
 
     const req = httpMock.expectOne('http://localhost:8000/api/v1/palette/generate-palette');
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ base_color: '#FF0000' });
+    expect(req.request.body).toEqual({ base_color: '#FF0000', harmony_type: 'complementary', count: 5 });
     req.flush(mockResponse);
   });
 
   it('should handle HTTP errors', () => {
-    service.generatePalette('#FF0000').subscribe({
+    service.generatePalette('#FF0000', 'monochromatic').subscribe({
       next: () => fail('should have failed'),
       error: (error) => {
         expect(error.status).toBe(400);

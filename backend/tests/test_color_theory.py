@@ -28,30 +28,30 @@ def test_calculate_contrast_ratio():
     assert service._calculate_contrast_ratio(0.5, 0.5) == 1.0
 
 
-def test_generate_full_palette_complementary():
+def test_generate_harmony_complementary():
     service = ColorTheoryService()
-    palette = service.generate_full_palette("#FF0000")
+    palette = service.generate_harmony("#FF0000", "complementary")
     assert "complementary" in palette
-    assert len(palette["complementary"]) == 2
+    assert len(palette["complementary"]) == 5
 
 
-def test_generate_full_palette_analogous():
+def test_generate_harmony_analogous():
     service = ColorTheoryService()
-    palette = service.generate_full_palette("#FF0000")
+    palette = service.generate_harmony("#FF0000", "analogous")
     assert "analogous" in palette
-    assert len(palette["analogous"]) == 3
+    assert len(palette["analogous"]) == 5
 
 
-def test_generate_full_palette_triadic():
+def test_generate_harmony_triadic():
     service = ColorTheoryService()
-    palette = service.generate_full_palette("#FF0000")
+    palette = service.generate_harmony("#FF0000", "triadic")
     assert "triadic" in palette
-    assert len(palette["triadic"]) == 3
+    assert len(palette["triadic"]) == 5
 
 
-def test_generate_full_palette_monochromatic():
+def test_generate_harmony_monochromatic():
     service = ColorTheoryService()
-    palette = service.generate_full_palette("#FF0000")
+    palette = service.generate_harmony("#FF0000", "monochromatic")
     assert "monochromatic" in palette
     assert len(palette["monochromatic"]) == 5
 

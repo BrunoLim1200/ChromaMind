@@ -13,22 +13,21 @@ def test_root_endpoint():
 def test_generate_palette_endpoint():
     response = client.post(
         "/api/v1/palette/generate-palette",
-        json={"base_color": "#FF0000"}
+        json={"base_color": "#FF0000", "harmony_type": "monochromatic"}
     )
     assert response.status_code == 200
     data = response.json()
     assert data["base_color"] == "#FF0000"
     assert "harmonies" in data
-    assert "complementary" in data["harmonies"]
-    assert "analogous" in data["harmonies"]
-    assert "triadic" in data["harmonies"]
     assert "monochromatic" in data["harmonies"]
+    # Ensure other harmonies are NOT present (optimization check)
+    assert "complementary" not in data["harmonies"]
 
 
 def test_generate_palette_invalid_hex():
     response = client.post(
         "/api/v1/palette/generate-palette",
-        json={"base_color": "invalid"}
+        json={"base_color": "invalid", "harmony_type": "monochromatic"}
     )
     assert response.status_code == 422
 
@@ -36,7 +35,7 @@ def test_generate_palette_invalid_hex():
 def test_generate_palette_missing_hash():
     response = client.post(
         "/api/v1/palette/generate-palette",
-        json={"base_color": "FF0000"}
+        json={"base_color": "FF0000", "harmony_type": "monochromatic"}
     )
     assert response.status_code == 422
 
@@ -44,12 +43,12 @@ def test_generate_palette_missing_hash():
 def test_complementary_palette_structure():
     response = client.post(
         "/api/v1/palette/generate-palette",
-        json={"base_color": "#0000FF"}
+        json={"base_color": "#0000FF", "harmony_type": "complementary"}
     )
     assert response.status_code == 200
     data = response.json()
     complementary = data["harmonies"]["complementary"]
-    assert len(complementary) == 2
+    assert len(complementary) == 5
     assert all("hex" in color for color in complementary)
     assert all("rgb" in color for color in complementary)
     assert all("wcag_aa_white" in color for color in complementary)
