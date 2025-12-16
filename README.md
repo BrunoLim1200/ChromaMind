@@ -1,6 +1,7 @@
 # ChromaMind
 
-<img width="1888" height="923" alt="image" src="https://github.com/user-attachments/assets/cfaa96f0-967f-499b-8870-e76ac1af4679" />
+<img width="1895" height="912" alt="image" src="https://github.com/user-attachments/assets/6991621e-ad95-477b-ba0f-bbe52583fd53" />
+https://brunolim1200.github.io/ChromaMind/
 
 ## Project Structure
 
