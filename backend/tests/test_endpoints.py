@@ -40,6 +40,27 @@ def test_generate_palette_missing_hash():
     assert response.status_code == 422
 
 
+def test_generate_palette_invalid_harmony():
+    response = client.post(
+        "/api/v1/palette/generate-palette",
+        json={"base_color": "#FF0000", "harmony_type": "invalid_harmony"}
+    )
+    assert response.status_code == 422
+
+
+def test_all_harmony_types():
+    harmony_types = ["monochromatic", "analogous", "complementary", "triadic", "split_complementary"]
+    for harmony in harmony_types:
+        response = client.post(
+            "/api/v1/palette/generate-palette",
+            json={"base_color": "#FF0000", "harmony_type": harmony}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert harmony in data["harmonies"]
+        assert len(data["harmonies"][harmony]) == 5
+
+
 def test_complementary_palette_structure():
     response = client.post(
         "/api/v1/palette/generate-palette",

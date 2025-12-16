@@ -98,6 +98,9 @@ class ColorTheoryService:
             # Split-Complementary: 3 hues (0, 150, 210)
             split_hues = [0, 150, 210]
             result["split_complementary"] = self._distribute_hues(h, l, s, split_hues, count)
+        
+        else:
+            raise ValueError(f"Invalid harmony type: {harmony_type}. Supported types: monochromatic, analogous, complementary, triadic, split_complementary")
 
         return result
 
