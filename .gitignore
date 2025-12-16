@@ -1,0 +1,33 @@
+# --- Global ---
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+# --- Backend (Python) ---
+backend/__pycache__/
+backend/**/*.py[cod]
+backend/venv/
+backend/.venv/
+backend/env/
+backend/.env
+backend/.pytest_cache/
+backend/htmlcov/
+backend/.coverage
+backend/*.spec
+
+# --- Frontend (Node/Angular) ---
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.sass-cache/
+frontend/connect.lock
+frontend/coverage/
+frontend/src/environments/environment.development.ts
+# Keep environment.ts as template, but ignore local keys if any
+# frontend/src/environments/environment.ts
+
+# --- OS Generated ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
