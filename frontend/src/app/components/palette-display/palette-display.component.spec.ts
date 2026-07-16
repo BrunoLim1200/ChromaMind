@@ -47,7 +47,7 @@ describe('PaletteDisplayComponent', () => {
 
   it('should update marker from hex color', () => {
     component.updateMarkerFromHex('#FF0000');
-    expect(component.markerPosition).toBeTruthy();
+    expect(component.markers.length).toBeGreaterThan(0);
   });
 
   it('should copy color to clipboard', async () => {

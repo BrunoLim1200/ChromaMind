@@ -45,18 +45,21 @@ class ColorTheoryService:
     def _adjust_hue(self, h: float, degree: float) -> float:
         return (h + degree / 360.0) % 1.0
 
+    def _swatch_from_hls(self, h: float, l: float, s: float) -> Dict[str, Any]:
+        rgb = tuple(int(c * 255) for c in colorsys.hls_to_rgb(h, l, s))
+        return self._create_swatch(self._rgb_to_hex(rgb))
+
     def generate_harmony(self, base_color_hex: str, harmony_type: str, count: int = 5) -> Dict[str, List[Dict[str, Any]]]:
         r, g, b = self._hex_to_rgb(base_color_hex)
         h, l, s = colorsys.rgb_to_hls(r/255.0, g/255.0, b/255.0)
-        
+
         result = {}
 
         if harmony_type == "monochromatic":
             # Monochromatic: Variations in lightness
             result["monochromatic"] = [
-                self._create_swatch(
-                    self._rgb_to_hex(tuple(int(c * 255) for c in colorsys.hls_to_rgb(h, 0.1 + (i * (0.8 / (count - 1))), s)))
-                ) for i in range(count)
+                self._swatch_from_hls(h, 0.1 + (i * (0.8 / (count - 1))), s)
+                for i in range(count)
             ]
 
         elif harmony_type == "analogous":
@@ -64,9 +67,8 @@ class ColorTheoryService:
             step = 60 / (count - 1) if count > 1 else 0
             start_angle = -30
             result["analogous"] = [
-                self._create_swatch(
-                    self._rgb_to_hex(tuple(int(c * 255) for c in colorsys.hls_to_rgb(self._adjust_hue(h, start_angle + (i * step)), l, s)))
-                ) for i in range(count)
+                self._swatch_from_hls(self._adjust_hue(h, start_angle + (i * step)), l, s)
+                for i in range(count)
             ]
 
         elif harmony_type == "complementary":
@@ -75,16 +77,14 @@ class ColorTheoryService:
             comp_h = self._adjust_hue(h, 180)
             base_count = (count + 1) // 2
             comp_count = count - base_count
-            
+
             base_vars = [
-                self._create_swatch(
-                    self._rgb_to_hex(tuple(int(c * 255) for c in colorsys.hls_to_rgb(h, 0.2 + (i * (0.6 / max(1, base_count - 1))), s)))
-                ) for i in range(base_count)
+                self._swatch_from_hls(h, 0.2 + (i * (0.6 / max(1, base_count - 1))), s)
+                for i in range(base_count)
             ]
             comp_vars = [
-                self._create_swatch(
-                    self._rgb_to_hex(tuple(int(c * 255) for c in colorsys.hls_to_rgb(comp_h, 0.2 + (i * (0.6 / max(1, comp_count - 1))), s)))
-                ) for i in range(comp_count)
+                self._swatch_from_hls(comp_h, 0.2 + (i * (0.6 / max(1, comp_count - 1))), s)
+                for i in range(comp_count)
             ]
             result["complementary"] = base_vars + comp_vars
 
@@ -112,9 +112,6 @@ class ColorTheoryService:
             cycle = i // len(offsets)
             l_var = l + (cycle * 0.1) if cycle > 0 else l
             l_var = max(0.1, min(0.9, l_var))
-            
-            new_h = self._adjust_hue(h, offset)
-            rgb = colorsys.hls_to_rgb(new_h, l_var, s)
-            hex_code = self._rgb_to_hex(tuple(int(c * 255) for c in rgb))
-            palette.append(self._create_swatch(hex_code))
+
+            palette.append(self._swatch_from_hls(self._adjust_hue(h, offset), l_var, s))
         return palette

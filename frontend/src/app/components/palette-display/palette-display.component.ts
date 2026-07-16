@@ -5,7 +5,7 @@ import { Dialog, DialogModule } from '@angular/cdk/dialog';
 import { ColorService, BackendColorSwatch, PaletteResponse } from '../../services/color.service';
 import { ExportTokenDialogComponent } from '../export-token-dialog/export-token-dialog.component';
 import { Subject, Subscription, asyncScheduler } from 'rxjs';
-import { debounceTime, switchMap, distinctUntilChanged, throttleTime } from 'rxjs/operators';
+import { switchMap, distinctUntilChanged, throttleTime } from 'rxjs/operators';
 
 interface ColorSwatch {
   hex: string;
@@ -56,13 +56,6 @@ export class PaletteDisplayComponent implements OnInit, OnDestroy {
   currentPalette: ColorSwatch[] = [];
   previewColors: ColorSwatch[] = [];
 
-  previewStats = [
-    { label: 'Total Revenue', value: '$45,231.89', change: '+20.1%', positive: true },
-    { label: 'Users', value: '2,845', icon: 'group' },
-    { label: 'Sales', value: '$12.4k', icon: 'attach_money' }
-  ];
-
-  markerPosition = { x: 0, y: 0 };
   markers: Array<{ x: number, y: number, color: string, offset: number }> = [];
   draggedMarkerIndex = 0;
   isDragging = false;
@@ -138,10 +131,6 @@ export class PaletteDisplayComponent implements OnInit, OnDestroy {
         offset: offset
       };
     });
-
-    if (this.markers.length > 0) {
-      this.markerPosition = { x: this.markers[0].x, y: this.markers[0].y };
-    }
   }
 
   startDrag(event: MouseEvent, index: number = -1) {
@@ -273,13 +262,11 @@ export class PaletteDisplayComponent implements OnInit, OnDestroy {
 
     if (backendColors) {
       this.currentPalette = backendColors.map(c => this.mapToFrontendSwatch(c));
-      
-      this.previewColors = [...this.currentPalette];
-      if (this.previewColors.length > 0) {
-        while (this.previewColors.length < 5) {
-          this.previewColors.push(this.previewColors[this.previewColors.length % this.currentPalette.length]);
-        }
-      }
+
+      this.previewColors = this.currentPalette.length === 0 ? [] : Array.from(
+        { length: Math.max(5, this.currentPalette.length) },
+        (_, i) => this.currentPalette[i % this.currentPalette.length]
+      );
     }
   }
 
