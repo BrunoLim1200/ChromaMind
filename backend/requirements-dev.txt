@@ -1,0 +1,5 @@
+# Development/test dependencies (not bundled into the Lambda package).
+-r requirements.txt
+httpx
+pytest
+pytest-asyncio

@@ -1,6 +1,14 @@
 from pydantic import BaseModel, Field
 from typing import List, Dict, Literal
 
+HarmonyType = Literal[
+    "monochromatic",
+    "analogous",
+    "complementary",
+    "triadic",
+    "split_complementary",
+]
+
 
 class ColorSwatch(BaseModel):
     hex: str
@@ -14,12 +22,12 @@ class ColorSwatch(BaseModel):
     wcag_aaa_black: bool
 
 
-class PaletteRequest(BaseModel):
+class PaletteQuery(BaseModel):
     base_color: str = Field(..., pattern=r"^#[0-9a-fA-F]{6}$")
     count: int = Field(5, ge=5, le=15, description="Number of colors to generate (5-15)")
-    harmony_type: Literal["monochromatic", "analogous", "complementary", "triadic", "split_complementary"] = Field(
-        "monochromatic", 
-        description="Type of harmony to generate"
+    harmony_type: HarmonyType = Field(
+        "monochromatic",
+        description="Type of harmony to generate",
     )
 
 

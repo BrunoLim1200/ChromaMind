@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -26,9 +26,13 @@ export class ColorService {
   private apiUrl = environment.apiUrl;
 
   generatePalette(baseColor: string, harmonyType: string, count: number = 5): Observable<PaletteResponse> {
-    return this.http.post<PaletteResponse>(
+    const params = new HttpParams()
+      .set('base_color', baseColor)
+      .set('harmony_type', harmonyType)
+      .set('count', count);
+    return this.http.get<PaletteResponse>(
       `${this.apiUrl}/palette/generate-palette`,
-      { base_color: baseColor, harmony_type: harmonyType, count }
+      { params }
     );
   }
 }

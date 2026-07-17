@@ -1,4 +1,6 @@
+// Default (development) environment. Replaced by environment.prod.ts in
+// production builds via the `fileReplacements` in angular.json.
 export const environment = {
-  production: true,
-  apiUrl: 'https://chromamind.onrender.com/api/v1'
+  production: false,
+  apiUrl: 'http://localhost:8000/api/v1'
 };

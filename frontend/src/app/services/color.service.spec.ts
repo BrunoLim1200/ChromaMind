@@ -39,9 +39,12 @@ describe('ColorService', () => {
       expect(response.harmonies.complementary).toBeTruthy();
     });
 
-    const req = httpMock.expectOne('http://localhost:8000/api/v1/palette/generate-palette');
-    expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ base_color: '#FF0000', harmony_type: 'complementary', count: 5 });
+    const req = httpMock.expectOne(r =>
+      r.method === 'GET' && r.url === 'http://localhost:8000/api/v1/palette/generate-palette'
+    );
+    expect(req.request.params.get('base_color')).toBe('#FF0000');
+    expect(req.request.params.get('harmony_type')).toBe('complementary');
+    expect(req.request.params.get('count')).toBe('5');
     req.flush(mockResponse);
   });
 
@@ -53,7 +56,9 @@ describe('ColorService', () => {
       }
     });
 
-    const req = httpMock.expectOne('http://localhost:8000/api/v1/palette/generate-palette');
+    const req = httpMock.expectOne(r =>
+      r.method === 'GET' && r.url === 'http://localhost:8000/api/v1/palette/generate-palette'
+    );
     req.flush('Invalid color', { status: 400, statusText: 'Bad Request' });
   });
 });

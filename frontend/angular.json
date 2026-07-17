@@ -37,7 +37,6 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
               "aot": true,
               "extractLicenses": true,
@@ -46,33 +45,42 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2kb",
-                  "maximumError": "5kb"
+                  "maximumWarning": "600kb",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kb",
+                  "maximumError": "10kb"
                 }
               ]
             },
             "development": {
               "optimization": false,
               "sourceMap": true,
-              "extractCss": false,
               "namedChunks": true,
               "aot": false,
               "extractLicenses": false,
               "vendorChunk": true,
               "buildOptimizer": false
             }
-          }
+          },
+          "defaultConfiguration": "production"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "ChromaMind:build"
+            "browserTarget": "ChromaMind:build:development"
           },
           "configurations": {
             "production": {
               "browserTarget": "ChromaMind:build:production"
+            },
+            "development": {
+              "browserTarget": "ChromaMind:build:development"
             }
-          }
+          },
+          "defaultConfiguration": "development"
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
