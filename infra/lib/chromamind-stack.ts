@@ -36,8 +36,6 @@ export class ChromaMindStack extends cdk.Stack {
       runtime: lambda.Runtime.PYTHON_3_12,
       memorySize: 256,
       timeout: cdk.Duration.seconds(10),
-      // Abuse backstop: cap concurrent executions (also protects downstream cost).
-      reservedConcurrentExecutions: 20,
       environment: {
         // Same-origin in production (SPA + API share the CloudFront domain), so
         // CORS is effectively unused; set this only for a split-domain setup.
