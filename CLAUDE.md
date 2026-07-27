@@ -1,7 +1,3 @@
----
-applyTo: '**'
----
-
 # Instruções do Projeto - ChromaMind
 
 ## Contexto
@@ -58,8 +54,7 @@ applyTo: '**'
 ### Estrutura de Pastas
 ```
 ChromaMind/
-├── .github/
-│   └── copilot-instructions.md   # Este arquivo
+├── CLAUDE.md                     # Este arquivo
 │
 ├── backend/
 │   ├── app/
@@ -195,4 +190,4 @@ ng serve
 
 **Última Atualização**: 9 de Dezembro de 2025
 
-**Nota**: Este arquivo é lido pelo Copilot em toda interação. Mantenha atualizado com padrões e decisões do projeto.
+**Nota**: Este arquivo é lido pelo Claude Code em toda interação. Mantenha atualizado com padrões e decisões do projeto.

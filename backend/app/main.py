@@ -14,12 +14,13 @@ logging.basicConfig(
 
 app = FastAPI(title=settings.app_name, debug=settings.debug)
 
+# Production is same-origin (SPA + API share the CloudFront domain), so CORS is
+# effectively unused. This stays settings-driven only as a fallback for a
+# split-domain/local setup; it defaults to localhost for dev.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
-    # Transitional: the current GitHub Pages frontend is served from *.github.io.
-    allow_origin_regex=r"https://.*\.github\.io",
-    allow_credentials=False,  # no cookies/auth — safe to keep origins broad
+    allow_credentials=False,  # no cookies/auth anywhere
     allow_methods=["GET"],
     allow_headers=["*"],
 )
